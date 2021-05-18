@@ -1,0 +1,12 @@
+---
+# defaults file for inverso.podman
+
+podman_packages_default:
+  - 'podman'
+  - 'podman-docker'
+
+podman_packages: '{{ podman_packages_default }}'
+
+podman_compose_state: 'skip' # ['skip','present','absent']
+
+podman_service: 

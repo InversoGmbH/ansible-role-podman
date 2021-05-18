@@ -1,0 +1,35 @@
+---
+# tasks file for inverso.podman
+
+- name: check required variables
+  assert:
+    that:
+      - podman_packages is iterable
+      - podman_packages | length > 1
+      - podman_compose_state in ['skip','present','absent']
+      - ansible_os_family | lower == 'redhat'
+#      - ansible_distribution_major_version == '8'
+  tags: ['varcheck']
+
+- name: ensure podman is installed
+  package:
+    name: '{{ podman_packages }}'
+    state: present
+
+- name: ensure podman compose is installed
+  package:
+    name: 'podman-compose'
+    state: '{{ podman_compose_state }}'
+  when: podman_compose_state in ['present','absent']
+
+- name: ensure podman storage is configured
+  lineinfile:
+    dest: '/etc/containers/storage.conf'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    state: present
+  loop:
+    - regexp: '^#?driver = \"\w+\"$'
+      line: 'driver = "overlay"'
+    - regexp: '^#?mount_program = ".+"'
+      line: 'mount_program = "/usr/bin/fuse-overlayfs"'
